@@ -183,6 +183,22 @@ fun WearSettingsScreen(
             }
         }
 
+        // Target HR (Run)
+        item {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text(text = "Target HR (Run): ${settings.targetHeartRateRun} bpm", style = MaterialTheme.typography.body2)
+                InlineSlider(
+                    value = settings.targetHeartRateRun.toFloat(),
+                    onValueChange = { onSettingsChange(settings.copy(targetHeartRateRun = it.toInt())) },
+                    increaseIcon = { Text(text = "+") },
+                    decreaseIcon = { Text(text = "-") },
+                    valueRange = 100f..200f,
+                    steps = 20,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
         item {
             Button(
                 onClick = onStart,

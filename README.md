@@ -4,8 +4,10 @@ RunApp is a cross-platform application built with **Compose Multiplatform**. It 
 
 ## 🚀 Native Wear OS Experience
 <p align="center">
-  <img src="docs/images/settings_ui.svg" width="200" alt="Settings UI" />
-  <img src="docs/images/race_ui.svg" width="200" alt="Race UI" />
+  <img src="docs/images/settings_ui.svg" width="180" alt="Settings Page 1" />
+  <img src="docs/images/settings_ui_2.svg" width="180" alt="Settings Page 2" />
+  <img src="docs/images/settings_ui_3.svg" width="180" alt="Settings Page 3" />
+  <img src="docs/images/race_ui.svg" width="180" alt="Race UI" />
 </p>
 
 This version is specifically optimized for the **Pixel 4 Watch**.
@@ -30,9 +32,16 @@ The app now supports **Three Persistent Profiles** for different training goals:
 - **5K Goal**: Specifically tuned for 5K race prep (Default 3.1 mi).
 - **Training**: For longer endurance sessions (Default 5.0 mi).
 
+#### **Settings Fields:**
+- **Race Profile**: Tap the top chip to cycle through preset names and base settings.
+- **Distance (mi)**: Target race distance (Adjustable 1-10 mi).
+- **Goal Time (min)**: Your target total time for the race (Adjustable 5-60 min).
+- **Walk Duration (min)**: How long each walking interval lasts.
+- **Run Duration (min)**: How long each running interval lasts.
+- **Target HR (Run)**: Maximum desired heart rate during run intervals. Exceeding this triggers a ⚠️ warning on the watch.
+
 **How it works:**
-- Tap the **Profile Chip** at the top of the settings screen to cycle between these types.
-- **Auto-Save**: Any changes you make to the distance, goal time, or walk/run intervals are automatically saved to that specific profile for your session.
+- **Auto-Save**: Any changes made to these sliders are saved instantly to the active profile.
 
 ### 2. During the Race
 Tap **START** to begin. The watch will:
