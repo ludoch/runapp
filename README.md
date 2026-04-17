@@ -3,7 +3,13 @@
 RunApp is a cross-platform application built with **Compose Multiplatform**. It helps runners and walkers track their progress during a race using an alternating Walk/Run strategy.
 
 ## 🚀 Native Wear OS Experience
-This version is specifically optimized for the **Pixel 4 Watch**. It uses native `androidx.wear.compose` components for a circular screen, including:
+<p align="center">
+  <img src="docs/images/settings_ui.svg" width="200" alt="Settings UI" />
+  <img src="docs/images/race_ui.svg" width="200" alt="Race UI" />
+</p>
+
+This version is specifically optimized for the **Pixel 4 Watch**.
+ It uses native `androidx.wear.compose` components for a circular screen, including:
 - **ScalingLazyColumn**: For smooth, curved scrolling.
 - **InlineSliders**: Precise adjustment of race parameters.
 - **TimeText**: Native system clock integration.

@@ -1,0 +1,22 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Watch Face -->
+  <circle cx="100" cy="100" r="98" fill="black" stroke="#333" stroke-width="2"/>
+  
+  <!-- Content -->
+  <text x="100" y="45" font-family="Arial" font-size="10" fill="#4CAF50" text-anchor="middle" font-weight="bold">RACE PROFILES</text>
+  
+  <!-- Profile Chip -->
+  <rect x="30" y="55" width="140" height="30" rx="15" fill="#333"/>
+  <text x="100" y="70" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Morning Run</text>
+  <text x="100" y="80" font-family="Arial" font-size="6" fill="#AAA" text-anchor="middle">Tap to switch type</text>
+  
+  <!-- Slider Mockup -->
+  <text x="100" y="105" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Distance: 2 mi</text>
+  <rect x="40" y="115" width="120" height="15" rx="5" fill="#222"/>
+  <text x="50" y="127" font-family="Arial" font-size="12" fill="white" text-anchor="middle">-</text>
+  <text x="150" y="127" font-family="Arial" font-size="12" fill="white" text-anchor="middle">+</text>
+  
+  <!-- Start Button -->
+  <rect x="60" y="150" width="80" height="25" rx="12.5" fill="#4CAF50"/>
+  <text x="100" y="167" font-family="Arial" font-size="10" fill="white" text-anchor="middle" font-weight="bold">START</text>
+</svg>

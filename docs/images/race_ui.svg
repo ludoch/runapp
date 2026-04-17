@@ -1,0 +1,23 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Watch Face -->
+  <circle cx="100" cy="100" r="98" fill="black" stroke="#333" stroke-width="2"/>
+  
+  <!-- Race Mode -->
+  <text x="100" y="50" font-family="Arial" font-size="18" fill="#4CAF50" text-anchor="middle" font-weight="bold">WALK</text>
+  
+  <!-- Timer -->
+  <text x="100" y="95" font-family="Arial" font-size="32" fill="white" text-anchor="middle" font-weight="bold">02:45</text>
+  
+  <!-- Distance -->
+  <text x="100" y="120" font-family="Arial" font-size="10" fill="#AAA" text-anchor="middle">0.45 / 2 mi</text>
+  
+  <!-- Coaching -->
+  <text x="100" y="145" font-family="Arial" font-size="10" fill="#00BCD4" text-anchor="middle" font-weight="bold">ON TRACK</text>
+  
+  <!-- Controls -->
+  <circle cx="80" cy="170" r="15" fill="#333"/>
+  <text x="80" y="175" font-family="Arial" font-size="10" fill="white" text-anchor="middle">||</text>
+  
+  <circle cx="120" cy="170" r="15" fill="#B71C1C"/>
+  <text x="120" y="175" font-family="Arial" font-size="10" fill="white" text-anchor="middle">X</text>
+</svg>
