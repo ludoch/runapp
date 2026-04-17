@@ -1,5 +1,6 @@
 package com.example.runapp
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,16 +12,25 @@ import androidx.wear.compose.material.*
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun WearApp() {
-    var settings by remember { mutableStateOf(RaceSettings()) }
+    val context = LocalContext.current
+    
+    // Load initial profiles (In a real app, this would be from a database/DataStore)
+    var profiles by remember { mutableStateOf(DefaultProfiles) }
+    var selectedProfileIndex by remember { mutableStateOf(0) }
+    
+    val currentSettings = profiles[selectedProfileIndex]
+    
     var state by remember { mutableStateOf(RaceState()) }
     var isSettingsOpen by remember { mutableStateOf(true) }
 
     val engine = remember {
         RaceEngine(
-            settings = settings,
+            settings = currentSettings,
             onStateUpdate = { state = it },
             onSequenceChange = { _, _ -> }
         )
@@ -34,10 +44,19 @@ fun WearApp() {
         ) {
             if (isSettingsOpen) {
                 WearSettingsScreen(
-                    settings = settings,
-                    onSettingsChange = { settings = it },
+                    settings = currentSettings,
+                    onSettingsChange = { updated ->
+                        // Update the profile in our list
+                        val newList = profiles.toMutableList()
+                        newList[selectedProfileIndex] = updated
+                        profiles = newList
+                        // In a real app: saveToDisk(updated)
+                    },
+                    onProfileCycle = {
+                        selectedProfileIndex = (selectedProfileIndex + 1) % profiles.size
+                    },
                     onStart = {
-                        engine.updateSettings(settings)
+                        engine.updateSettings(profiles[selectedProfileIndex])
                         engine.start()
                         isSettingsOpen = false
                     }
@@ -45,11 +64,23 @@ fun WearApp() {
             } else {
                 WearRaceScreen(
                     state = state,
-                    settings = settings,
+                    settings = currentSettings,
                     onPause = { if (state.isPaused) engine.resume() else engine.pause() },
                     onCancel = { isSettingsOpen = true }
                 )
             }
+        }
+    }
+
+    LaunchedEffect(state.isPaused, state.isFinished, isSettingsOpen) {
+        while (!state.isPaused && !state.isFinished && !isSettingsOpen) {
+            kotlinx.coroutines.delay(1000)
+            engine.updateTick(
+                delta = 1.seconds,
+                distanceDelta = 2.0,
+                stepsDelta = 2,
+                heartRate = (130..155).random()
+            )
         }
     }
 }
@@ -58,6 +89,7 @@ fun WearApp() {
 fun WearSettingsScreen(
     settings: RaceSettings,
     onSettingsChange: (RaceSettings) -> Unit,
+    onProfileCycle: () -> Unit,
     onStart: () -> Unit
 ) {
     ScalingLazyColumn(
@@ -65,53 +97,63 @@ fun WearSettingsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 40.dp, bottom = 40.dp)
     ) {
-        item { Text(text = "RACE SETTINGS", style = MaterialTheme.typography.caption1, color = Color.Green) }
+        item { Text(text = "RACE PROFILES", style = MaterialTheme.typography.caption1, color = Color.Green) }
 
-        // Race Name (Static for now in Watch UI as typing is hard)
+        // Profile Selector (Cycles between the 3 types)
         item {
             Chip(
-                onClick = { },
+                onClick = onProfileCycle,
                 label = { Text(text = settings.name) },
-                secondaryLabel = { Text(text = "Race Name") },
-                modifier = Modifier.fillMaxWidth()
+                secondaryLabel = { Text(text = "Tap to switch type") },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                colors = ChipDefaults.primaryChipColors(backgroundColor = Color.DarkGray)
             )
+        }
+
+        item { 
+            Text(
+                text = "Edit ${settings.name} below:", 
+                style = MaterialTheme.typography.caption2, 
+                color = Color.LightGray,
+                modifier = Modifier.padding(top = 8.dp)
+            ) 
         }
 
         // Distance
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Distance: ${settings.distanceValue} ${settings.distanceUnit}", style = MaterialTheme.typography.body2)
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text(text = "Distance: ${settings.distanceValue.toInt()} mi", style = MaterialTheme.typography.body2)
                 InlineSlider(
                     value = settings.distanceValue.toFloat(),
                     onValueChange = { onSettingsChange(settings.copy(distanceValue = it.toDouble())) },
                     increaseIcon = { Text(text = "+") },
                     decreaseIcon = { Text(text = "-") },
-                    valueRange = 0.5f..10.0f,
-                    steps = 19,
+                    valueRange = 1f..10f,
+                    steps = 8,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
 
-        // Goal Time
+        // Goal
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(text = "Goal: ${settings.goalTime.inWholeMinutes} min", style = MaterialTheme.typography.body2)
                 InlineSlider(
                     value = settings.goalTime.inWholeMinutes.toFloat(),
                     onValueChange = { onSettingsChange(settings.copy(goalTime = it.toInt().minutes)) },
                     increaseIcon = { Text(text = "+") },
                     decreaseIcon = { Text(text = "-") },
-                    valueRange = 5f..120f,
-                    steps = 23,
+                    valueRange = 5f..60f,
+                    steps = 54,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
 
-        // Walk Time
+        // Walk
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(text = "Walk: ${settings.walkDuration.inWholeMinutes} min", style = MaterialTheme.typography.body2)
                 InlineSlider(
                     value = settings.walkDuration.inWholeMinutes.toFloat(),
@@ -119,15 +161,15 @@ fun WearSettingsScreen(
                     increaseIcon = { Text(text = "+") },
                     decreaseIcon = { Text(text = "-") },
                     valueRange = 1f..10f,
-                    steps = 9,
+                    steps = 8,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
 
-        // Run Time
+        // Run
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(text = "Run: ${settings.runDuration.inWholeMinutes} min", style = MaterialTheme.typography.body2)
                 InlineSlider(
                     value = settings.runDuration.inWholeMinutes.toFloat(),
@@ -135,23 +177,7 @@ fun WearSettingsScreen(
                     increaseIcon = { Text(text = "+") },
                     decreaseIcon = { Text(text = "-") },
                     valueRange = 1f..10f,
-                    steps = 9,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-
-        // Heart Rate Target (Run)
-        item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Target HR (Run): ${settings.targetHeartRateRun}", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.targetHeartRateRun.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(targetHeartRateRun = it.toInt())) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 100f..200f,
-                    steps = 20,
+                    steps = 8,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -160,7 +186,7 @@ fun WearSettingsScreen(
         item {
             Button(
                 onClick = onStart,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
             ) {
                 Text(text = "START", fontWeight = FontWeight.Bold)
@@ -179,7 +205,7 @@ fun WearRaceScreen(
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
+        contentPadding = PaddingValues(top = 28.dp, bottom = 28.dp)
     ) {
         item {
             Text(
@@ -198,7 +224,7 @@ fun WearRaceScreen(
 
         item {
             Text(
-                text = "${"%.2f".format(state.totalDistance / 1609.34)} / ${settings.distanceValue} mi",
+                text = "${"%.2f".format(state.totalDistance / 1609.34)} / ${settings.distanceValue.toInt()} mi",
                 style = MaterialTheme.typography.body2
             )
         }
@@ -206,7 +232,7 @@ fun WearRaceScreen(
         if (state.heartRateAlert) {
             item {
                 Text(
-                    text = "⚠️ HR TOO HIGH: ${state.currentHeartRate}",
+                    text = "⚠️ HR HIGH: ${state.currentHeartRate}",
                     style = MaterialTheme.typography.caption1,
                     color = Color.Red,
                     fontWeight = FontWeight.Bold
@@ -229,7 +255,7 @@ fun WearRaceScreen(
         item {
             Row(
                 modifier = Modifier.padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(onClick = onPause, modifier = Modifier.size(ButtonDefaults.SmallButtonSize)) {
                     Text(text = if (state.isPaused) "►" else "||")

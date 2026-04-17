@@ -14,6 +14,7 @@ enum class DistanceUnit(val factor: Double) {
 }
 
 data class RaceSettings(
+    val id: String = "default",
     val name: String = "My Race",
     val distanceValue: Double = 2.0,
     val distanceUnit: DistanceUnit = DistanceUnit.MILES,
@@ -25,6 +26,12 @@ data class RaceSettings(
 ) {
     val distanceInMeters: Double get() = distanceValue * distanceUnit.factor
 }
+
+val DefaultProfiles = listOf(
+    RaceSettings(id = "morning", name = "Morning Run", distanceValue = 2.0, goalTime = 20.minutes),
+    RaceSettings(id = "5k", name = "5K Goal", distanceValue = 3.1, goalTime = 30.minutes),
+    RaceSettings(id = "training", name = "Training", distanceValue = 5.0, goalTime = 60.minutes)
+)
 
 data class RaceState(
     val currentType: RaceType = RaceType.WALK,

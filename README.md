@@ -19,12 +19,14 @@ This version is specifically optimized for the **Pixel 4 Watch**. It uses native
 ## 📖 User Guide
 
 ### 1. Configuring Your Race
-When you launch the app, you are presented with the **Settings Screen**. Scroll through to set:
-- **Race Name**: Identifies your current session.
-- **Distance**: Set your target (e.g., 2.0 mi or 5.0 km).
-- **Goal Time**: Your target total time for the race.
-- **Walk/Run Durations**: Set how many minutes you want to alternate between (e.g., 3m Walk, 1m Run).
-- **Target HR**: Set your maximum desired heart rate for running to receive alerts.
+The app now supports **Three Persistent Profiles** for different training goals:
+- **Morning Run**: Optimized for quick daily sessions (Default 2.0 mi).
+- **5K Goal**: Specifically tuned for 5K race prep (Default 3.1 mi).
+- **Training**: For longer endurance sessions (Default 5.0 mi).
+
+**How it works:**
+- Tap the **Profile Chip** at the top of the settings screen to cycle between these types.
+- **Auto-Save**: Any changes you make to the distance, goal time, or walk/run intervals are automatically saved to that specific profile for your session.
 
 ### 2. During the Race
 Tap **START** to begin. The watch will:
