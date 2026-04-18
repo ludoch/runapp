@@ -38,7 +38,8 @@ The app now supports **Three Persistent Profiles** for different training goals:
 - **Goal Time (min)**: Your target total time for the race (Adjustable 5-60 min).
 - **Walk Duration (min)**: How long each walking interval lasts.
 - **Run Duration (min)**: How long each running interval lasts.
-- **Target HR (Run)**: Maximum desired heart rate during run intervals. Exceeding this triggers a ⚠️ warning on the watch.
+- **HR Walk (bpm)**: Maximum desired heart rate during walk intervals.
+- **HR Run (bpm)**: Maximum desired heart rate during run intervals.
 
 **How it works:**
 - **Auto-Save**: Any changes made to these sliders are saved instantly to the active profile.
@@ -49,7 +50,7 @@ Tap **START** to begin. The watch will:
 - **Countdown**: Show the time remaining in the current sequence.
 - **Progress**: Show your total distance covered vs. your goal.
 - **Coaching**: Display "ON TRACK", "TOO SLOW", or "TOO FAST" based on your goal time.
-- **HR Alert**: Display a ⚠️ warning if your heart rate exceeds your set target.
+- **HR Alert Overlay**: A high-visibility red overlay appears if your heart rate exceeds the target for your current activity (Walk or Run). It displays your exact BPM and requires you to tap "OK" to dismiss it, ensuring your safety.
 
 ### 3. Controls
 - **Pause/Resume (►/||)**: Pause the race if you need to stop.
