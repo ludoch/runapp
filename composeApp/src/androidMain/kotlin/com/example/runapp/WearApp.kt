@@ -31,14 +31,15 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun WearApp(
+    isAmbient: Boolean = false,
     onStartRace: () -> Unit = {},
     onFinishRace: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("race_prefs", Context.MODE_PRIVATE) }
     
-    var profiles by remember { mutableStateOf(loadProfiles(prefs)) }
-    var selectedProfileIndex by remember { mutableStateOf(0) }
+    var profiles by remember { mutableStateOf<List<RaceSettings>>(loadProfiles(prefs)) }
+    var selectedProfileIndex by remember { mutableIntStateOf(0) }
     val currentSettings = profiles[selectedProfileIndex]
     
     var state by remember { mutableStateOf(RaceState()) }
@@ -67,7 +68,6 @@ fun WearApp(
                     raceTimestamp = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date())
                     isRecapOpen = true
                     onFinishRace()
-                    // Save for Tile
                     prefs.edit().putString("last_race_summary", "${"%.2f".format(it.totalDistance / 1609.34)} mi in ${formatDuration(it.totalTime)}").apply()
                 }
             },
@@ -80,11 +80,8 @@ fun WearApp(
 
     DisposableEffect(isSettingsOpen) {
         if (isSettingsOpen) return@DisposableEffect onDispose {}
-
         val hrListener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent) {
-                if (event.sensor.type == Sensor.TYPE_HEART_RATE) liveHeartRate = event.values[0].toInt()
-            }
+            override fun onSensorChanged(event: SensorEvent) { if (event.sensor.type == Sensor.TYPE_HEART_RATE) liveHeartRate = event.values[0].toInt() }
             override fun onAccuracyChanged(s: Sensor?, a: Int) {}
         }
         val stepListener = object : SensorEventListener {
@@ -106,7 +103,6 @@ fun WearApp(
         sensorManager.registerListener(hrListener, sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE), SensorManager.SENSOR_DELAY_UI)
         sensorManager.registerListener(stepListener, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER), SensorManager.SENSOR_DELAY_UI)
         try { locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 1f, locListener) } catch (e: SecurityException) {}
-
         onDispose {
             sensorManager.unregisterListener(hrListener)
             sensorManager.unregisterListener(stepListener)
@@ -116,11 +112,11 @@ fun WearApp(
 
     MaterialTheme {
         Scaffold(
-            timeText = { TimeText() },
+            timeText = { if (!isAmbient) TimeText() },
             vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
             positionIndicator = { PositionIndicator(scalingLazyListState = rememberScalingLazyListState()) }
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
                 if (isSettingsOpen) {
                     WearSettingsScreen(
                         settings = currentSettings,
@@ -132,22 +128,22 @@ fun WearApp(
                         },
                         onProfileCycle = { selectedProfileIndex = (selectedProfileIndex + 1) % profiles.size },
                         onStart = {
-                            distanceMoved = 0.0
-                            lastSteps = -1
-                            liveSteps = 0
-                            lastLocation = null
-                            engine.updateSettings(profiles[selectedProfileIndex])
-                            engine.start()
-                            isSettingsOpen = false
-                            isRecapOpen = false
-                            onStartRace()
+                            distanceMoved = 0.0; lastSteps = -1; liveSteps = 0; lastLocation = null
+                            engine.updateSettings(profiles[selectedProfileIndex]); engine.start()
+                            isSettingsOpen = false; isRecapOpen = false; onStartRace()
                         }
                     )
                 } else if (isRecapOpen) {
                     WearRecapScreen(state = state, settings = currentSettings, timestamp = raceTimestamp, onClose = { isSettingsOpen = true; isRecapOpen = false })
                 } else {
-                    WearRaceScreen(state = state, settings = currentSettings, onPause = { if (state.isPaused) engine.resume() else engine.pause() }, onCancel = { isSettingsOpen = true; onFinishRace() })
-                    if (state.heartRateAlert && !isAlertDismissed) {
+                    WearRaceScreen(
+                        state = state, 
+                        settings = currentSettings, 
+                        isAmbient = isAmbient,
+                        onPause = { if (state.isPaused) engine.resume() else engine.pause() }, 
+                        onCancel = { isSettingsOpen = true; onFinishRace() }
+                    )
+                    if (state.heartRateAlert && !isAlertDismissed && !isAmbient) {
                         HeartRateAlertOverlay(currentHeartRate = state.currentHeartRate, onDismiss = { isAlertDismissed = true })
                     }
                 }
@@ -258,14 +254,18 @@ fun SettingSlider(label: String, valueText: String, value: Float, range: ClosedF
 }
 
 @Composable
-fun WearRaceScreen(state: RaceState, settings: RaceSettings, onPause: () -> Unit, onCancel: () -> Unit) {
+fun WearRaceScreen(state: RaceState, settings: RaceSettings, isAmbient: Boolean, onPause: () -> Unit, onCancel: () -> Unit) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(top = 28.dp, bottom = 28.dp)) {
-        item { Text(text = if (state.currentType == RaceType.WALK) "WALK" else "RUN", style = MaterialTheme.typography.title1, color = if (state.currentType == RaceType.WALK) Color.Green else Color.Red) }
-        item { Text(text = formatDuration(state.sequenceRemainingTime), style = MaterialTheme.typography.display1) }
-        item { Text(text = "${"%.2f".format(state.totalDistance / 1609.34)} / ${settings.distanceValue.toInt()} mi", style = MaterialTheme.typography.body2) }
-        item { Text(text = "HR: ${state.currentHeartRate} bpm", style = MaterialTheme.typography.caption2, color = if (state.heartRateAlert) Color.Red else Color.Gray) }
-        item { Text(text = state.isOnTrack(settings), style = MaterialTheme.typography.caption2, color = if (state.isOnTrack(settings) == "TOO SLOW") Color.Red else Color.Cyan) }
-        item { Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) { Button(onClick = onPause, modifier = Modifier.size(ButtonDefaults.SmallButtonSize)) { Text(if (state.isPaused) "►" else "||") }
-        Button(onClick = onCancel, modifier = Modifier.size(ButtonDefaults.SmallButtonSize), colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)) { Text("X") } } }
+        item { Text(text = if (state.currentType == RaceType.WALK) "WALK" else "RUN", style = MaterialTheme.typography.title1, color = if (isAmbient) Color.White else (if (state.currentType == RaceType.WALK) Color.Green else Color.Red)) }
+        item { Text(text = formatDuration(state.sequenceRemainingTime), style = MaterialTheme.typography.display1, color = Color.White) }
+        item { Text(text = "${"%.2f".format(state.totalDistance / 1609.34)} / ${settings.distanceValue.toInt()} mi", style = MaterialTheme.typography.body2, color = Color.White) }
+        if (!isAmbient) {
+            item { Text(text = "HR: ${state.currentHeartRate} bpm", style = MaterialTheme.typography.caption2, color = if (state.heartRateAlert) Color.Red else Color.Gray) }
+            item { Text(text = state.isOnTrack(settings), style = MaterialTheme.typography.caption2, color = if (state.isOnTrack(settings) == "TOO SLOW") Color.Red else Color.Cyan) }
+            item { Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) { Button(onClick = onPause, modifier = Modifier.size(ButtonDefaults.SmallButtonSize)) { Text(if (state.isPaused) "►" else "||") }
+            Button(onClick = onCancel, modifier = Modifier.size(ButtonDefaults.SmallButtonSize), colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)) { Text("X") } } }
+        } else {
+            item { Text(text = "PACE: " + state.currentPace, style = MaterialTheme.typography.caption2, color = Color.White) }
+        }
     }
 }

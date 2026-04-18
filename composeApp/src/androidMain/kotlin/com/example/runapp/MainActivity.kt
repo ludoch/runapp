@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,6 +17,7 @@ import androidx.wear.ambient.AmbientLifecycleObserver
 class MainActivity : ComponentActivity() {
     private var raceService: RaceService? = null
     private var isBound by mutableStateOf(false)
+    private var isAmbient by mutableStateOf(false)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -30,10 +32,10 @@ class MainActivity : ComponentActivity() {
 
     private val ambientCallback = object : AmbientLifecycleObserver.AmbientLifecycleCallback {
         override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
-            // App entered Always-on/Ambient mode
+            isAmbient = true
         }
         override fun onExitAmbient() {
-            // App woke up
+            isAmbient = false
         }
     }
 
@@ -61,12 +63,15 @@ class MainActivity : ComponentActivity() {
             val isWear = packageName.endsWith(".wear")
             if (isWear) {
                 WearApp(
+                    isAmbient = isAmbient,
                     onStartRace = { 
+                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         startService(Intent(this, RaceService::class.java))
                         bindService(Intent(this, RaceService::class.java), connection, Context.BIND_AUTO_CREATE)
                         raceService?.startForegroundService()
                     },
                     onFinishRace = {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         raceService?.stopForegroundService()
                         if (isBound) unbindService(connection)
                         isBound = false
