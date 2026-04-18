@@ -4,12 +4,14 @@ RunApp is a cross-platform application built with **Compose Multiplatform**. It 
 
 ## 🚀 Native Wear OS Experience
 <p align="center">
-  <img src="docs/images/settings_ui.svg" width="130" alt="Settings Page 1" />
-  <img src="docs/images/settings_ui_2.svg" width="130" alt="Settings Page 2" />
-  <img src="docs/images/settings_ui_3.svg" width="130" alt="Settings Page 3" />
-  <img src="docs/images/settings_ui_4.svg" width="130" alt="Settings Page 4" />
-  <img src="docs/images/race_ui.svg" width="130" alt="Race UI" />
-  <img src="docs/images/hr_alert_ui.svg" width="130" alt="HR Alert UI" />
+  <img src="docs/images/settings_ui.svg" width="220" alt="Settings Page 1" />
+  <img src="docs/images/settings_ui_2.svg" width="220" alt="Settings Page 2" />
+  <img src="docs/images/settings_ui_3.svg" width="220" alt="Settings Page 3" />
+</p>
+<p align="center">
+  <img src="docs/images/settings_ui_4.svg" width="220" alt="Settings Page 4" />
+  <img src="docs/images/race_ui.svg" width="220" alt="Race UI" />
+  <img src="docs/images/hr_alert_ui.svg" width="220" alt="HR Alert UI" />
 </p>
 
 This version is specifically optimized for the **Pixel 4 Watch**.
