@@ -1,0 +1,22 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Watch Face -->
+  <circle cx="100" cy="100" r="98" fill="black" stroke="#00BCD4" stroke-width="2"/>
+  
+  <!-- Content -->
+  <text x="100" y="40" font-family="Arial" font-size="12" fill="#00BCD4" text-anchor="middle" font-weight="bold">RACE RECAP</text>
+  <text x="100" y="55" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Morning Run</text>
+  
+  <!-- Stats -->
+  <text x="100" y="75" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Distance</text>
+  <text x="100" y="88" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">2.00 mi</text>
+  
+  <text x="100" y="105" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Avg Pace</text>
+  <text x="100" y="118" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">10:15 /mi</text>
+  
+  <text x="100" y="135" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Min/Max HR</text>
+  <text x="100" y="148" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">115 / 158</text>
+  
+  <!-- Done Button -->
+  <rect x="70" y="160" width="60" height="22" rx="11" fill="#333"/>
+  <text x="100" y="175" font-family="Arial" font-size="9" fill="white" text-anchor="middle" font-weight="bold">DONE</text>
+</svg>

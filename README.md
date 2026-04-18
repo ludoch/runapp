@@ -13,6 +13,9 @@ RunApp is a cross-platform application built with **Compose Multiplatform**. It 
   <img src="docs/images/race_ui.svg" width="220" alt="Race UI" />
   <img src="docs/images/hr_alert_ui.svg" width="220" alt="HR Alert UI" />
 </p>
+<p align="center">
+  <img src="docs/images/recap_ui.svg" width="220" alt="Race Recap UI" />
+</p>
 
 This version is specifically optimized for the **Pixel 4 Watch**.
  It uses native `androidx.wear.compose` components for a circular screen, including:
