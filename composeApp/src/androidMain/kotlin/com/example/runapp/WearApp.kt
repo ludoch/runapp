@@ -17,6 +17,9 @@ import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.platform.LocalContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun WearApp() {
@@ -29,6 +32,7 @@ fun WearApp() {
     var isSettingsOpen by remember { mutableStateOf(true) }
     var isRecapOpen by remember { mutableStateOf(false) }
     var isAlertDismissed by remember { mutableStateOf(false) }
+    var raceTimestamp by remember { mutableStateOf("") }
 
     val engine = remember {
         RaceEngine(
@@ -36,7 +40,8 @@ fun WearApp() {
             onStateUpdate = { 
                 state = it 
                 if (!it.heartRateAlert) isAlertDismissed = false
-                if (it.isFinished && !isSettingsOpen) {
+                if (it.isFinished && !isSettingsOpen && !isRecapOpen) {
+                    raceTimestamp = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date())
                     isRecapOpen = true
                 }
             },
@@ -73,6 +78,7 @@ fun WearApp() {
                     WearRecapScreen(
                         state = state,
                         settings = currentSettings,
+                        timestamp = raceTimestamp,
                         onClose = { 
                             isSettingsOpen = true
                             isRecapOpen = false
@@ -111,7 +117,7 @@ fun WearApp() {
 }
 
 @Composable
-fun WearRecapScreen(state: RaceState, settings: RaceSettings, onClose: () -> Unit) {
+fun WearRecapScreen(state: RaceState, settings: RaceSettings, timestamp: String, onClose: () -> Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -119,6 +125,9 @@ fun WearRecapScreen(state: RaceState, settings: RaceSettings, onClose: () -> Uni
     ) {
         item { Text(text = "RACE RECAP", style = MaterialTheme.typography.title2, color = Color.Cyan) }
         item { Text(text = settings.name, style = MaterialTheme.typography.caption1) }
+        item { Text(text = timestamp, style = MaterialTheme.typography.caption2, color = Color.Gray) }
+        
+        item { Spacer(Modifier.height(8.dp)) }
         
         item { RecapItem("Distance", "${"%.2f".format(state.totalDistance / 1609.34)} mi") }
         item { RecapItem("Total Time", formatDuration(state.totalTime)) }

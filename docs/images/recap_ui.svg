@@ -3,8 +3,9 @@
   <circle cx="100" cy="100" r="98" fill="black" stroke="#00BCD4" stroke-width="2"/>
   
   <!-- Content -->
-  <text x="100" y="40" font-family="Arial" font-size="12" fill="#00BCD4" text-anchor="middle" font-weight="bold">RACE RECAP</text>
-  <text x="100" y="55" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Morning Run</text>
+  <text x="100" y="35" font-family="Arial" font-size="12" fill="#00BCD4" text-anchor="middle" font-weight="bold">RACE RECAP</text>
+  <text x="100" y="48" font-family="Arial" font-size="8" fill="white" text-anchor="middle">Morning Run</text>
+  <text x="100" y="58" font-family="Arial" font-size="7" fill="#AAA" text-anchor="middle">Apr 17, 16:45</text>
   
   <!-- Stats -->
   <text x="100" y="75" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Distance</text>
