@@ -24,6 +24,7 @@ This version is specifically optimized for the **Pixel 4 Watch**.
 - **Kotlin Multiplatform (KMP)**: Shared business logic and state.
 - **Compose Multiplatform (CMP)**: Shared UI logic.
 - **Wear OS Compose**: Native Android Watch UI.
+- **GPS & Sensors**: Utilizes real-time GPS location and Heart Rate sensor data for tracking.
 - **Gradle 9.3.1 / Java 21**: Optimized build environment.
 
 ---
@@ -60,6 +61,14 @@ Tap **START** to begin. The watch will:
 - **Pause/Resume (►/||)**: Pause the race if you need to stop.
 - **Cancel (X)**: End the race immediately and return to settings.
 - **Auto-Finish**: The app will display "DONE!" automatically once your target distance is reached.
+
+### 4. Post-Race Recap
+Upon finishing, a **Recap Screen** displays your performance metrics:
+- **Total Distance**: Final distance covered (mi).
+- **Total Time**: Exact duration of the session.
+- **Avg Pace**: Your average minutes per mile.
+- **Total Steps**: Cumulative step count from the watch sensors.
+- **Min/Max HR**: Your lowest and highest recorded heart rate.
 
 ---
 

@@ -27,6 +27,7 @@ fun WearApp() {
     
     var state by remember { mutableStateOf(RaceState()) }
     var isSettingsOpen by remember { mutableStateOf(true) }
+    var isRecapOpen by remember { mutableStateOf(false) }
     var isAlertDismissed by remember { mutableStateOf(false) }
 
     val engine = remember {
@@ -34,8 +35,10 @@ fun WearApp() {
             settings = currentSettings,
             onStateUpdate = { 
                 state = it 
-                // Reset dismissal if HR goes back to normal
                 if (!it.heartRateAlert) isAlertDismissed = false
+                if (it.isFinished && !isSettingsOpen) {
+                    isRecapOpen = true
+                }
             },
             onSequenceChange = { _, _ -> }
         )
@@ -63,6 +66,16 @@ fun WearApp() {
                             engine.updateSettings(profiles[selectedProfileIndex])
                             engine.start()
                             isSettingsOpen = false
+                            isRecapOpen = false
+                        }
+                    )
+                } else if (isRecapOpen) {
+                    WearRecapScreen(
+                        state = state,
+                        settings = currentSettings,
+                        onClose = { 
+                            isSettingsOpen = true
+                            isRecapOpen = false
                         }
                     )
                 } else {
@@ -73,7 +86,6 @@ fun WearApp() {
                         onCancel = { isSettingsOpen = true }
                     )
 
-                    // HR ALERT OVERLAY
                     if (state.heartRateAlert && !isAlertDismissed) {
                         HeartRateAlertOverlay(
                             currentHeartRate = state.currentHeartRate,
@@ -92,9 +104,45 @@ fun WearApp() {
                 delta = 1.seconds,
                 distanceDelta = 2.0,
                 stepsDelta = 2,
-                heartRate = (110..165).random() // Simulating some alert triggers
+                heartRate = (110..165).random()
             )
         }
+    }
+}
+
+@Composable
+fun WearRecapScreen(state: RaceState, settings: RaceSettings, onClose: () -> Unit) {
+    ScalingLazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(top = 40.dp, bottom = 40.dp)
+    ) {
+        item { Text(text = "RACE RECAP", style = MaterialTheme.typography.title2, color = Color.Cyan) }
+        item { Text(text = settings.name, style = MaterialTheme.typography.caption1) }
+        
+        item { RecapItem("Distance", "${"%.2f".format(state.totalDistance / 1609.34)} mi") }
+        item { RecapItem("Total Time", formatDuration(state.totalTime)) }
+        item { RecapItem("Avg Pace", state.currentPace + " /mi") }
+        item { RecapItem("Total Steps", "${state.totalSteps}") }
+        item { RecapItem("Min/Max HR", "${if(state.minHeartRate == Int.MAX_VALUE) 0 else state.minHeartRate}/${state.maxHeartRate}") }
+        
+        item {
+            Button(
+                onClick = onClose,
+                modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)
+            ) {
+                Text("DONE")
+            }
+        }
+    }
+}
+
+@Composable
+fun RecapItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(text = label, style = MaterialTheme.typography.caption2, color = Color.LightGray)
+        Text(text = value, style = MaterialTheme.typography.body1, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -108,49 +156,25 @@ fun HeartRateAlertOverlay(currentHeartRate: Int, onDismiss: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "⚠️ HR HIGH",
-                style = MaterialTheme.typography.title1,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = "$currentHeartRate",
-                fontSize = 48.sp,
-                color = Color.Yellow,
-                fontWeight = FontWeight.ExtraBold
-            )
-            Text(
-                text = "BPM",
-                style = MaterialTheme.typography.caption1,
-                color = Color.White
-            )
+            Text(text = "⚠️ HR HIGH", style = MaterialTheme.typography.title1, color = Color.White)
+            Text(text = "$currentHeartRate", fontSize = 48.sp, color = Color.Yellow, fontWeight = FontWeight.ExtraBold)
+            Text(text = "BPM", style = MaterialTheme.typography.caption1, color = Color.White)
             Spacer(Modifier.height(16.dp))
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-            ) {
-                Text(text = "OK", color = Color.Red, fontWeight = FontWeight.Bold)
+            Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)) {
+                Text(text = "OK", color = Color.Red)
             }
         }
     }
 }
 
 @Composable
-fun WearSettingsScreen(
-    settings: RaceSettings,
-    onSettingsChange: (RaceSettings) -> Unit,
-    onProfileCycle: () -> Unit,
-    onStart: () -> Unit
-) {
+fun WearSettingsScreen(settings: RaceSettings, onSettingsChange: (RaceSettings) -> Unit, onProfileCycle: () -> Unit, onStart: () -> Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 40.dp, bottom = 40.dp)
     ) {
         item { Text(text = "RACE PROFILES", style = MaterialTheme.typography.caption1, color = Color.Green) }
-
         item {
             Chip(
                 onClick = onProfileCycle,
@@ -159,111 +183,34 @@ fun WearSettingsScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
             )
         }
-
         item { Text(text = "Settings:", style = MaterialTheme.typography.caption2, color = Color.Gray) }
-
-        // Distance
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(text = "Dist: ${settings.distanceValue.toInt()} mi", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.distanceValue.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(distanceValue = it.toDouble())) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 1f..10f,
-                    steps = 8,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            SettingSlider("Dist", "${settings.distanceValue.toInt()} mi", settings.distanceValue.toFloat(), 1f..10f, 8) {
+                onSettingsChange(settings.copy(distanceValue = it.toDouble()))
             }
         }
-
-        // Goal Time
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(text = "Goal: ${settings.goalTime.inWholeMinutes} min", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.goalTime.inWholeMinutes.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(goalTime = it.toInt().minutes)) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 5f..120f,
-                    steps = 23,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            SettingSlider("Walk", "${settings.walkDuration.inWholeMinutes} min", settings.walkDuration.inWholeMinutes.toFloat(), 1f..10f, 8) {
+                onSettingsChange(settings.copy(walkDuration = it.toInt().minutes))
             }
         }
-
-        // Walk Duration
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(text = "Walk: ${settings.walkDuration.inWholeMinutes} min", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.walkDuration.inWholeMinutes.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(walkDuration = it.toInt().minutes)) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 1f..10f,
-                    steps = 8,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            SettingSlider("Run", "${settings.runDuration.inWholeMinutes} min", settings.runDuration.inWholeMinutes.toFloat(), 1f..10f, 8) {
+                onSettingsChange(settings.copy(runDuration = it.toInt().minutes))
             }
         }
-
-        // Run Duration
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(text = "Run: ${settings.runDuration.inWholeMinutes} min", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.runDuration.inWholeMinutes.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(runDuration = it.toInt().minutes)) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 1f..10f,
-                    steps = 8,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            SettingSlider("HR Walk", "${settings.targetHeartRateWalk} bpm", settings.targetHeartRateWalk.toFloat(), 80f..150f, 7) {
+                onSettingsChange(settings.copy(targetHeartRateWalk = it.toInt()))
             }
         }
-
-        // Target HR (Walk)
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(text = "HR Walk: ${settings.targetHeartRateWalk} bpm", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.targetHeartRateWalk.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(targetHeartRateWalk = it.toInt())) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 80f..150f,
-                    steps = 7,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            SettingSlider("HR Run", "${settings.targetHeartRateRun} bpm", settings.targetHeartRateRun.toFloat(), 100f..200f, 10) {
+                onSettingsChange(settings.copy(targetHeartRateRun = it.toInt()))
             }
         }
-
-        // Target HR (Run)
         item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(text = "HR Run: ${settings.targetHeartRateRun} bpm", style = MaterialTheme.typography.body2)
-                InlineSlider(
-                    value = settings.targetHeartRateRun.toFloat(),
-                    onValueChange = { onSettingsChange(settings.copy(targetHeartRateRun = it.toInt())) },
-                    increaseIcon = { Text(text = "+") },
-                    decreaseIcon = { Text(text = "-") },
-                    valueRange = 100f..200f,
-                    steps = 10,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-
-        item {
-            Button(
-                onClick = onStart,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
-            ) {
+            Button(onClick = onStart, modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp), colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))) {
                 Text(text = "START", fontWeight = FontWeight.Bold)
             }
         }
@@ -271,12 +218,23 @@ fun WearSettingsScreen(
 }
 
 @Composable
-fun WearRaceScreen(
-    state: RaceState,
-    settings: RaceSettings,
-    onPause: () -> Unit,
-    onCancel: () -> Unit
-) {
+fun SettingSlider(label: String, valueText: String, value: Float, range: ClosedFloatingPointRange<Float>, steps: Int, onValueChange: (Float) -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
+        Text(text = "$label: $valueText", style = MaterialTheme.typography.body2)
+        InlineSlider(
+            value = value,
+            onValueChange = onValueChange,
+            increaseIcon = { Text("+") },
+            decreaseIcon = { Text("-") },
+            valueRange = range,
+            steps = steps,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun WearRaceScreen(state: RaceState, settings: RaceSettings, onPause: () -> Unit, onCancel: () -> Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -289,56 +247,14 @@ fun WearRaceScreen(
                 color = if (state.currentType == RaceType.WALK) Color.Green else Color.Red
             )
         }
-        
+        item { Text(text = formatDuration(state.sequenceRemainingTime), style = MaterialTheme.typography.display1) }
+        item { Text(text = "${"%.2f".format(state.totalDistance / 1609.34)} / ${settings.distanceValue.toInt()} mi", style = MaterialTheme.typography.body2) }
+        item { Text(text = "HR: ${state.currentHeartRate} bpm", style = MaterialTheme.typography.caption2, color = if (state.heartRateAlert) Color.Red else Color.Gray) }
+        item { Text(text = state.isOnTrack(settings), style = MaterialTheme.typography.caption2, color = if (state.isOnTrack(settings) == "TOO SLOW") Color.Red else Color.Cyan) }
         item {
-            Text(
-                text = formatDuration(state.sequenceRemainingTime),
-                style = MaterialTheme.typography.display1
-            )
-        }
-
-        item {
-            Text(
-                text = "${"%.2f".format(state.totalDistance / 1609.34)} / ${settings.distanceValue.toInt()} mi",
-                style = MaterialTheme.typography.body2
-            )
-        }
-
-        item {
-            Text(
-                text = "HR: ${state.currentHeartRate} bpm",
-                style = MaterialTheme.typography.caption2,
-                color = if (state.heartRateAlert) Color.Red else Color.Gray
-            )
-        }
-
-        item {
-            Text(
-                text = state.isOnTrack(settings),
-                style = MaterialTheme.typography.caption2,
-                color = when (state.isOnTrack(settings)) {
-                    "TOO SLOW" -> Color.Red
-                    "TOO FAST" -> Color.Yellow
-                    else -> Color.Cyan
-                }
-            )
-        }
-
-        item {
-            Row(
-                modifier = Modifier.padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(onClick = onPause, modifier = Modifier.size(ButtonDefaults.SmallButtonSize)) {
-                    Text(text = if (state.isPaused) "►" else "||")
-                }
-                Button(
-                    onClick = onCancel, 
-                    modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)
-                ) {
-                    Text(text = "X")
-                }
+            Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = onPause, modifier = Modifier.size(ButtonDefaults.SmallButtonSize)) { Text(if (state.isPaused) "►" else "||") }
+                Button(onClick = onCancel, modifier = Modifier.size(ButtonDefaults.SmallButtonSize), colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)) { Text("X") }
             }
         }
     }

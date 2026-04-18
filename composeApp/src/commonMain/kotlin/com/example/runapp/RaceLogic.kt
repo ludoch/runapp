@@ -43,10 +43,20 @@ data class RaceState(
     val currentHeartRate: Int = 0,
     val isPaused: Boolean = true,
     val isFinished: Boolean = false,
-    val heartRateAlert: Boolean = false
+    val heartRateAlert: Boolean = false,
+    val minHeartRate: Int = Int.MAX_VALUE,
+    val maxHeartRate: Int = 0,
+    val avgPaceSecondsPerMi: Long = 0
 ) {
     val sequenceElapsedTime: Duration get() = totalTime - sequenceStartTime
     val sequenceRemainingTime: Duration get() = sequenceDuration - sequenceElapsedTime
+    
+    val currentPace: String get() {
+        if (totalTime.inWholeSeconds == 0L || totalDistance == 0.0) return "--:--"
+        val mi = totalDistance / 1609.34
+        val paceSecs = (totalTime.inWholeSeconds / mi).toLong()
+        return "%02d:%02d".format(paceSecs / 60, paceSecs % 60)
+    }
     
     fun isOnTrack(settings: RaceSettings): String {
         if (totalTime.inWholeSeconds == 0L) return "Starting..."
@@ -113,6 +123,8 @@ class RaceEngine(
             totalDistance = newTotalDistance,
             totalSteps = newTotalSteps,
             currentHeartRate = heartRate,
+            minHeartRate = if (heartRate > 0) kotlin.math.min(state.minHeartRate, heartRate) else state.minHeartRate,
+            maxHeartRate = kotlin.math.max(state.maxHeartRate, heartRate),
             isFinished = isFinished,
             heartRateAlert = heartRate > (if (newType == RaceType.WALK) settings.targetHeartRateWalk else settings.targetHeartRateRun)
         )
