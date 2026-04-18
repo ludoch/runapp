@@ -129,8 +129,8 @@ fun WearRecapScreen(state: RaceState, settings: RaceSettings, timestamp: String,
         
         item { Spacer(Modifier.height(8.dp)) }
         
-        item { RecapItem("Distance", "${"%.2f".format(state.totalDistance / 1609.34)} mi") }
         item { RecapItem("Total Time", formatDuration(state.totalTime)) }
+        item { RecapItem("Distance", "${"%.2f".format(state.totalDistance / 1609.34)} mi") }
         item { RecapItem("Avg Pace", state.currentPace + " /mi") }
         item { RecapItem("Total Steps", "${state.totalSteps}") }
         item { RecapItem("Min/Max HR", "${if(state.minHeartRate == Int.MAX_VALUE) 0 else state.minHeartRate}/${state.maxHeartRate}") }

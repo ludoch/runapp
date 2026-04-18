@@ -3,21 +3,21 @@
   <circle cx="100" cy="100" r="98" fill="black" stroke="#00BCD4" stroke-width="2"/>
   
   <!-- Content -->
-  <text x="100" y="35" font-family="Arial" font-size="12" fill="#00BCD4" text-anchor="middle" font-weight="bold">RACE RECAP</text>
-  <text x="100" y="48" font-family="Arial" font-size="8" fill="white" text-anchor="middle">Morning Run</text>
-  <text x="100" y="58" font-family="Arial" font-size="7" fill="#AAA" text-anchor="middle">Apr 17, 16:45</text>
+  <text x="100" y="32" font-family="Arial" font-size="12" fill="#00BCD4" text-anchor="middle" font-weight="bold">RACE RECAP</text>
+  <text x="100" y="44" font-family="Arial" font-size="7" fill="white" text-anchor="middle">Morning Run</text>
+  <text x="100" y="52" font-family="Arial" font-size="6" fill="#AAA" text-anchor="middle">Apr 17, 16:45</text>
   
   <!-- Stats -->
-  <text x="100" y="75" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Distance</text>
-  <text x="100" y="88" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">2.00 mi</text>
+  <text x="100" y="68" font-family="Arial" font-size="7" fill="#AAA" text-anchor="middle">Total Time</text>
+  <text x="100" y="80" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">24:45</text>
+
+  <text x="100" y="95" font-family="Arial" font-size="7" fill="#AAA" text-anchor="middle">Distance</text>
+  <text x="100" y="107" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">2.00 mi</text>
   
-  <text x="100" y="105" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Avg Pace</text>
-  <text x="100" y="118" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">10:15 /mi</text>
+  <text x="100" y="122" font-family="Arial" font-size="7" fill="#AAA" text-anchor="middle">Avg Pace</text>
+  <text x="100" y="134" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">12:22 /mi</text>
   
-  <text x="100" y="135" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Min/Max HR</text>
-  <text x="100" y="148" font-family="Arial" font-size="12" fill="white" text-anchor="middle" font-weight="bold">115 / 158</text>
-  
-  <!-- Done Button -->
-  <rect x="70" y="160" width="60" height="22" rx="11" fill="#333"/>
-  <text x="100" y="175" font-family="Arial" font-size="9" fill="white" text-anchor="middle" font-weight="bold">DONE</text>
+  <!-- Done Button peak -->
+  <rect x="75" y="155" width="50" height="20" rx="10" fill="#333"/>
+  <text x="100" y="168" font-family="Arial" font-size="8" fill="white" text-anchor="middle" font-weight="bold">DONE</text>
 </svg>
