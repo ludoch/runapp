@@ -30,14 +30,14 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun WearApp() {
+fun WearApp(
+    onStartRace: () -> Unit = {},
+    onFinishRace: () -> Unit = {}
+) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("race_prefs", Context.MODE_PRIVATE) }
     
-    // Persistence Logic
-    var profiles by remember { 
-        mutableStateOf(loadProfiles(prefs))
-    }
+    var profiles by remember { mutableStateOf(loadProfiles(prefs)) }
     var selectedProfileIndex by remember { mutableStateOf(0) }
     val currentSettings = profiles[selectedProfileIndex]
     
@@ -47,7 +47,6 @@ fun WearApp() {
     var isAlertDismissed by remember { mutableStateOf(false) }
     var raceTimestamp by remember { mutableStateOf("") }
 
-    // Live Sensors Data
     var liveHeartRate by remember { mutableIntStateOf(0) }
     var liveSteps by remember { mutableIntStateOf(0) }
     var lastSteps by remember { mutableIntStateOf(-1) }
@@ -67,17 +66,18 @@ fun WearApp() {
                 if (it.isFinished && !isSettingsOpen && !isRecapOpen) {
                     raceTimestamp = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date())
                     isRecapOpen = true
+                    onFinishRace()
+                    // Save for Tile
+                    prefs.edit().putString("last_race_summary", "${"%.2f".format(it.totalDistance / 1609.34)} mi in ${formatDuration(it.totalTime)}").apply()
                 }
             },
             onSequenceChange = { type, _ ->
-                // HAPTIC FEEDBACK
                 val pattern = if (type == RaceType.RUN) longArrayOf(0, 500, 200, 500) else longArrayOf(0, 200, 100, 200)
                 vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
             }
         )
     }
 
-    // SENSOR REGISTRATION
     DisposableEffect(isSettingsOpen) {
         if (isSettingsOpen) return@DisposableEffect onDispose {}
 
@@ -87,7 +87,6 @@ fun WearApp() {
             }
             override fun onAccuracyChanged(s: Sensor?, a: Int) {}
         }
-
         val stepListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 if (event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
@@ -98,21 +97,15 @@ fun WearApp() {
             }
             override fun onAccuracyChanged(s: Sensor?, a: Int) {}
         }
-
         val locListener = object : LocationListener {
             override fun onLocationChanged(location: Location) {
-                lastLocation?.let { 
-                    distanceMoved += it.distanceTo(location).toDouble()
-                }
+                lastLocation?.let { distanceMoved += it.distanceTo(location).toDouble() }
                 lastLocation = location
             }
         }
-
         sensorManager.registerListener(hrListener, sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE), SensorManager.SENSOR_DELAY_UI)
         sensorManager.registerListener(stepListener, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER), SensorManager.SENSOR_DELAY_UI)
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 1f, locListener)
-        } catch (e: SecurityException) {}
+        try { locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 1f, locListener) } catch (e: SecurityException) {}
 
         onDispose {
             sensorManager.unregisterListener(hrListener)
@@ -137,9 +130,7 @@ fun WearApp() {
                             profiles = newList
                             saveProfiles(prefs, newList)
                         },
-                        onProfileCycle = {
-                            selectedProfileIndex = (selectedProfileIndex + 1) % profiles.size
-                        },
+                        onProfileCycle = { selectedProfileIndex = (selectedProfileIndex + 1) % profiles.size },
                         onStart = {
                             distanceMoved = 0.0
                             lastSteps = -1
@@ -149,12 +140,13 @@ fun WearApp() {
                             engine.start()
                             isSettingsOpen = false
                             isRecapOpen = false
+                            onStartRace()
                         }
                     )
                 } else if (isRecapOpen) {
                     WearRecapScreen(state = state, settings = currentSettings, timestamp = raceTimestamp, onClose = { isSettingsOpen = true; isRecapOpen = false })
                 } else {
-                    WearRaceScreen(state = state, settings = currentSettings, onPause = { if (state.isPaused) engine.resume() else engine.pause() }, onCancel = { isSettingsOpen = true })
+                    WearRaceScreen(state = state, settings = currentSettings, onPause = { if (state.isPaused) engine.resume() else engine.pause() }, onCancel = { isSettingsOpen = true; onFinishRace() })
                     if (state.heartRateAlert && !isAlertDismissed) {
                         HeartRateAlertOverlay(currentHeartRate = state.currentHeartRate, onDismiss = { isAlertDismissed = true })
                     }
@@ -163,30 +155,20 @@ fun WearApp() {
         }
     }
 
-    // THE REAL TICK
     LaunchedEffect(state.isPaused, state.isFinished, isSettingsOpen) {
         var lastDistance = 0.0
         var lastStepCount = 0
-        
         while (!state.isPaused && !state.isFinished && !isSettingsOpen) {
             kotlinx.coroutines.delay(1000)
             val dDist = distanceMoved - lastDistance
             val dSteps = liveSteps - lastStepCount
-            
-            engine.updateTick(
-                delta = 1.seconds,
-                distanceDelta = dDist,
-                stepsDelta = dSteps,
-                heartRate = liveHeartRate
-            )
-            
+            engine.updateTick(delta = 1.seconds, distanceDelta = dDist, stepsDelta = dSteps, heartRate = liveHeartRate)
             lastDistance = distanceMoved
             lastStepCount = liveSteps
         }
     }
 }
 
-// PERSISTENCE HELPERS
 fun saveProfiles(prefs: SharedPreferences, profiles: List<RaceSettings>) {
     val editor = prefs.edit()
     profiles.forEach { profile ->
@@ -256,7 +238,9 @@ fun WearSettingsScreen(settings: RaceSettings, onSettingsChange: (RaceSettings) 
     ScalingLazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(top = 40.dp, bottom = 40.dp)) {
         item { Text(text = "RACE PROFILES", style = MaterialTheme.typography.caption1, color = Color.Green) }
         item { Chip(onClick = onProfileCycle, label = { Text(text = settings.name) }, secondaryLabel = { Text(text = "Tap to switch") }, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) }
+        item { Text(text = "Settings:", style = MaterialTheme.typography.caption2, color = Color.Gray) }
         item { SettingSlider("Dist", "${settings.distanceValue.toInt()} mi", settings.distanceValue.toFloat(), 1f..10f, 8) { onSettingsChange(settings.copy(distanceValue = it.toDouble())) } }
+        item { SettingSlider("Goal", "${settings.goalTime.inWholeMinutes} min", settings.goalTime.inWholeMinutes.toFloat(), 5f..60f, 55) { onSettingsChange(settings.copy(goalTime = it.toInt().minutes)) } }
         item { SettingSlider("Walk", "${settings.walkDuration.inWholeMinutes} min", settings.walkDuration.inWholeMinutes.toFloat(), 1f..10f, 8) { onSettingsChange(settings.copy(walkDuration = it.toInt().minutes)) } }
         item { SettingSlider("Run", "${settings.runDuration.inWholeMinutes} min", settings.runDuration.inWholeMinutes.toFloat(), 1f..10f, 8) { onSettingsChange(settings.copy(runDuration = it.toInt().minutes)) } }
         item { SettingSlider("HR Walk", "${settings.targetHeartRateWalk} bpm", settings.targetHeartRateWalk.toFloat(), 80f..150f, 7) { onSettingsChange(settings.copy(targetHeartRateWalk = it.toInt())) } }

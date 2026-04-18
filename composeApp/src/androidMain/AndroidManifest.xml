@@ -10,12 +10,34 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="com.google.android.wearable.permission.RECEIVE_COMPLICATION_DATA" />
 
     <application
         android:allowBackup="true"
         android:label="RunApp"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
+        
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <service
+            android:name=".RaceService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location|health" />
+
+        <service
+            android:name=".RaceTileService"
+            android:exported="true"
+            android:label="RunApp Tile"
+            android:permission="com.google.android.wearable.permission.BIND_TILE">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_ENDPOINT" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

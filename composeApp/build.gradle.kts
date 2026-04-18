@@ -50,6 +50,12 @@ kotlin {
                 implementation("androidx.wear.compose:compose-foundation:1.3.1")
                 implementation("androidx.wear.compose:compose-navigation:1.3.1")
                 implementation("com.google.android.gms:play-services-wearable:18.1.0")
+                
+                // New dependencies for background and carousel support
+                implementation("androidx.wear:wear-ongoing:1.0.0")
+                implementation("androidx.wear.tiles:tiles:1.2.0")
+                implementation("androidx.wear.tiles:tiles-material:1.2.0")
+                implementation("androidx.wear:wear:1.3.0")
             }
         }
 
@@ -80,7 +86,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.runapp"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
