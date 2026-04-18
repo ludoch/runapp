@@ -65,6 +65,19 @@ kotlin {
 android {
     namespace = "com.example.runapp"
     compileSdk = 34
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("mobile") {
+            dimension = "version"
+            applicationIdSuffix = ".mobile"
+        }
+        create("wear") {
+            dimension = "version"
+            applicationIdSuffix = ".wear"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.runapp"
         minSdk = 25

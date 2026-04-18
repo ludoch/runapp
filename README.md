@@ -66,11 +66,27 @@ Tap **START** to begin. The watch will:
 1.  **Developer Mode**: *Settings > System > About > Versions*. Tap "Build Number" 7 times.
 2.  **Wireless Debugging**: Enable in *Settings > Developer Options*. Turn **Bluetooth OFF** for stability.
 
-### 2. Build & Install
+### 2. Build & Install (Flavors)
+The project uses **Product Flavors** to target different devices:
+
+**For Pixel Watch (Wear OS):**
 ```bash
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
-./gradlew clean :composeApp:installDebug --no-daemon
+./gradlew :composeApp:installWearDebug --no-daemon
 ```
+
+**For Pixel Phone (Android):**
+```bash
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
+./gradlew :composeApp:assembleMobileDebug --no-daemon
+```
+
+## 📦 How to "Publish" (Side-loading)
+To share the app without the Play Store:
+1.  **Build the APK**: Run the "Pixel Phone" build command above.
+2.  **Locate APK**: Find the file at `composeApp/build/outputs/apk/mobile/debug/composeApp-mobile-debug.apk`.
+3.  **Share**: Upload this file to GitHub Releases, Dropbox, or email it.
+4.  **Install**: Open the APK on the phone and select **"Allow from this source"** when prompted by Android.
 
 ---
 

@@ -8,8 +8,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Use the Native Wear App instead of the common App
-            WearApp()
+            if (BuildConfig.FLAVOR == "wear") {
+                WearApp()
+            } else {
+                App()
+            }
         }
     }
 }
