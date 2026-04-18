@@ -178,6 +178,22 @@ fun WearSettingsScreen(
             }
         }
 
+        // Goal Time
+        item {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text(text = "Goal: ${settings.goalTime.inWholeMinutes} min", style = MaterialTheme.typography.body2)
+                InlineSlider(
+                    value = settings.goalTime.inWholeMinutes.toFloat(),
+                    onValueChange = { onSettingsChange(settings.copy(goalTime = it.toInt().minutes)) },
+                    increaseIcon = { Text(text = "+") },
+                    decreaseIcon = { Text(text = "-") },
+                    valueRange = 5f..120f,
+                    steps = 23,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
         // Walk Duration
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {

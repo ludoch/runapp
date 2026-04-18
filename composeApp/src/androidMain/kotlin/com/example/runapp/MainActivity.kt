@@ -8,7 +8,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            if (BuildConfig.FLAVOR == "wear") {
+            // Using a safer check that doesn't rely on BuildConfig if it's failing
+            // We can determine the flavor by the package name if needed
+            val isWear = packageName.endsWith(".wear")
+            
+            if (isWear) {
                 WearApp()
             } else {
                 App()
