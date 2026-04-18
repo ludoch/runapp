@@ -3,19 +3,19 @@
   <circle cx="100" cy="100" r="98" fill="black" stroke="#333" stroke-width="2"/>
   
   <!-- Scrolled Content (Bottom) -->
-  <!-- Run Duration -->
-  <text x="100" y="50" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Run: 1 min</text>
+  <!-- HR Walk -->
+  <text x="100" y="50" font-family="Arial" font-size="10" fill="white" text-anchor="middle">HR Walk: 120 bpm</text>
   <rect x="40" y="60" width="120" height="15" rx="5" fill="#222"/>
   <text x="50" y="72" font-family="Arial" font-size="12" fill="white" text-anchor="middle">-</text>
   <text x="150" y="72" font-family="Arial" font-size="12" fill="white" text-anchor="middle">+</text>
 
-  <!-- Target HR -->
-  <text x="100" y="105" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Target HR: 150 bpm</text>
+  <!-- HR Run -->
+  <text x="100" y="105" font-family="Arial" font-size="10" fill="white" text-anchor="middle">HR Run: 150 bpm</text>
   <rect x="40" y="115" width="120" height="15" rx="5" fill="#222"/>
   <text x="50" y="127" font-family="Arial" font-size="12" fill="white" text-anchor="middle">-</text>
   <text x="150" y="127" font-family="Arial" font-size="12" fill="white" text-anchor="middle">+</text>
   
-  <!-- Start Button -->
+  <!-- Start Button peak -->
   <rect x="60" y="150" width="80" height="25" rx="12.5" fill="#4CAF50"/>
   <text x="100" y="167" font-family="Arial" font-size="10" fill="white" text-anchor="middle" font-weight="bold">START</text>
 </svg>

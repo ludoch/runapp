@@ -1,0 +1,13 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Watch Face -->
+  <circle cx="100" cy="100" r="98" fill="black" stroke="#333" stroke-width="2"/>
+  
+  <!-- Scrolled Content (End) -->
+  <text x="100" y="70" font-family="Arial" font-size="10" fill="#666" text-anchor="middle">...HR Run</text>
+
+  <!-- Start Button -->
+  <rect x="50" y="85" width="100" height="40" rx="20" fill="#4CAF50"/>
+  <text x="100" y="110" font-family="Arial" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+  
+  <text x="100" y="150" font-family="Arial" font-size="8" fill="#AAA" text-anchor="middle">Scroll down for all settings</text>
+</svg>

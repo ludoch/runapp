@@ -4,11 +4,12 @@ RunApp is a cross-platform application built with **Compose Multiplatform**. It 
 
 ## 🚀 Native Wear OS Experience
 <p align="center">
-  <img src="docs/images/settings_ui.svg" width="150" alt="Settings Page 1" />
-  <img src="docs/images/settings_ui_2.svg" width="150" alt="Settings Page 2" />
-  <img src="docs/images/settings_ui_3.svg" width="150" alt="Settings Page 3" />
-  <img src="docs/images/race_ui.svg" width="150" alt="Race UI" />
-  <img src="docs/images/hr_alert_ui.svg" width="150" alt="HR Alert UI" />
+  <img src="docs/images/settings_ui.svg" width="130" alt="Settings Page 1" />
+  <img src="docs/images/settings_ui_2.svg" width="130" alt="Settings Page 2" />
+  <img src="docs/images/settings_ui_3.svg" width="130" alt="Settings Page 3" />
+  <img src="docs/images/settings_ui_4.svg" width="130" alt="Settings Page 4" />
+  <img src="docs/images/race_ui.svg" width="130" alt="Race UI" />
+  <img src="docs/images/hr_alert_ui.svg" width="130" alt="HR Alert UI" />
 </p>
 
 This version is specifically optimized for the **Pixel 4 Watch**.
@@ -37,10 +38,10 @@ The app now supports **Three Persistent Profiles** for different training goals:
 - **Race Profile**: Tap the top chip to cycle through preset names and base settings.
 - **Distance (mi)**: Target race distance (Adjustable 1-10 mi).
 - **Goal Time (min)**: Your target total time for the race (Adjustable 5-60 min).
-- **Walk Duration (min)**: How long each walking interval lasts.
-- **Run Duration (min)**: How long each running interval lasts.
-- **HR Walk (bpm)**: Maximum desired heart rate during walk intervals.
-- **HR Run (bpm)**: Maximum desired heart rate during run intervals.
+- **Walk Duration (min)**: Duration of walk intervals.
+- **Run Duration (min)**: Duration of run intervals.
+- **HR Walk (bpm)**: Max heart rate target during walk.
+- **HR Run (bpm)**: Max heart rate target during run.
 
 **How it works:**
 - **Auto-Save**: Any changes made to these sliders are saved instantly to the active profile.
