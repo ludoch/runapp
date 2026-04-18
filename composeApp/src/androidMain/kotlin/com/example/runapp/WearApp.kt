@@ -1,6 +1,10 @@
 package com.example.runapp
 
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -8,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.*
@@ -24,6 +27,27 @@ import java.util.Locale
 @Composable
 fun WearApp() {
     val context = LocalContext.current
+    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val hrSensor = remember { sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE) }
+    
+    var liveHeartRate by remember { mutableIntStateOf(0) }
+    
+    // Sensor Listener
+    DisposableEffect(Unit) {
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type == Sensor.TYPE_HEART_RATE) {
+                    liveHeartRate = event.values[0].toInt()
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        sensorManager.registerListener(listener, hrSensor, SensorManager.SENSOR_DELAY_UI)
+        onDispose {
+            sensorManager.unregisterListener(listener)
+        }
+    }
+
     var profiles by remember { mutableStateOf(DefaultProfiles) }
     var selectedProfileIndex by remember { mutableStateOf(0) }
     val currentSettings = profiles[selectedProfileIndex]
@@ -108,9 +132,9 @@ fun WearApp() {
             kotlinx.coroutines.delay(1000)
             engine.updateTick(
                 delta = 1.seconds,
-                distanceDelta = 2.0,
-                stepsDelta = 2,
-                heartRate = (110..165).random()
+                distanceDelta = 0.0, // This would be from real GPS
+                stepsDelta = 0,      // This would be from Step counter
+                heartRate = liveHeartRate
             )
         }
     }
@@ -126,21 +150,14 @@ fun WearRecapScreen(state: RaceState, settings: RaceSettings, timestamp: String,
         item { Text(text = "RACE RECAP", style = MaterialTheme.typography.title2, color = Color.Cyan) }
         item { Text(text = settings.name, style = MaterialTheme.typography.caption1) }
         item { Text(text = timestamp, style = MaterialTheme.typography.caption2, color = Color.Gray) }
-        
         item { Spacer(Modifier.height(8.dp)) }
-        
         item { RecapItem("Total Time", formatDuration(state.totalTime)) }
         item { RecapItem("Distance", "${"%.2f".format(state.totalDistance / 1609.34)} mi") }
         item { RecapItem("Avg Pace", state.currentPace + " /mi") }
         item { RecapItem("Total Steps", "${state.totalSteps}") }
         item { RecapItem("Min/Max HR", "${if(state.minHeartRate == Int.MAX_VALUE) 0 else state.minHeartRate}/${state.maxHeartRate}") }
-        
         item {
-            Button(
-                onClick = onClose,
-                modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)
-            ) {
+            Button(onClick = onClose, modifier = Modifier.padding(top = 16.dp).fillMaxWidth(), colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)) {
                 Text("DONE")
             }
         }
@@ -157,13 +174,7 @@ fun RecapItem(label: String, value: String) {
 
 @Composable
 fun HeartRateAlertOverlay(currentHeartRate: Int, onDismiss: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Red.copy(alpha = 0.9f))
-            .padding(20.dp),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Red.copy(alpha = 0.9f)).padding(20.dp), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "⚠️ HR HIGH", style = MaterialTheme.typography.title1, color = Color.White)
             Text(text = "$currentHeartRate", fontSize = 48.sp, color = Color.Yellow, fontWeight = FontWeight.ExtraBold)
